@@ -118,7 +118,7 @@ clean:
 	rm -f $(BUILD_PATH)/$(TARGET).* 
 
 clean-all: 
-	rm -f $(peripheral_obj) $(assemble-device) $(assemble-startup) $(assemble-nucleo) $(build-library) $(BUILD_PATH)/$(TARGET).*
+	rm -f $(peripheral_obj) $(assemble-device) $(assemble-startup) $(assemble-nucleo) $(assemble-it-file) $(build-library) $(BUILD_PATH)/$(TARGET).*
 
 clean-peripherals:
 	rm -f $(peripheral_obj)
