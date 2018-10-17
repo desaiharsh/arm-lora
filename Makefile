@@ -2,7 +2,7 @@
 TARGET = main
 
 # Include Libraries:
-prefix = C:/libarm/STM32L1xx_StdPeriph_Lib_V1.3.1
+prefix = ./ext/libarm/STM32L1xx_StdPeriph_Lib_V1.3.1
 
 LIB_CMSIS_PRE = $(prefix)/Libraries/CMSIS
 LIB_CMSIS_INC = $(LIB_CMSIS_PRE)/Include/
@@ -14,12 +14,6 @@ LIB_CMSIS_DEV_SRC = $(LIB_CMSIS_DEV_PRE)/Source/Templates
 LIB_PERIPHERALS_PRE = $(prefix)/Libraries/STM32L1xx_StdPeriph_Driver
 LIB_PERIPHERALS_INC = $(LIB_PERIPHERALS_PRE)/inc/
 LIB_PERIPHERALS_SRC = $(LIB_PERIPHERALS_PRE)/src/
-
-PROJECT_INCLUDE = C:/arm-lora/inc/
-
-#LIBEVAL = $(prefix)/Utilities/STM32_EVAL/STM32L152_EVAL/
-#LIBEVALCOMM = $(prefix)/Utilities/STM32_EVAL/Common/
-#LIBNUCLEO = C:/LoRa_Bug/ARM_code_test/STM32L1/STM32L1xx/bsp/STM32L152_Nucleo/
 
 # Compiler commands
 CC = arm-none-eabi-gcc
@@ -62,7 +56,7 @@ CFLAGS = -std=gnu99 -g -O2 -Wall -mthumb -mcpu=$(CPU) -march=$(ARCH) --specs=nos
 LFLAGS = -nostartfiles -Xlinker --output=$(BUILD_PATH)/$(TARGET).elf -Xlinker --script=$(STARTUP_FILE_PATH)/stm32_flash.ld -Xlinker -n -nostdlib -nodefaultlibs -fno-exceptions 
 
 LIB_INCLUDES = -I'$(LIB_CMSIS_DEV_INC)' -I'$(LIB_CMSIS_INC)' -I'$(LIB_PERIPHERALS_INC)' 
-LIB_INCLUDES_EXT = -I'$(PROJECT_INCLUDE)'
+LIB_INCLUDES_EXT = -I'$(INCLUDE_PATH)'
 LIB_LINKS = -L'$(ARCHIVE_PATH)' -L'$(BUILD_PATH)' -L'$(OBJ_PATH)'
 
 # Preprocessor Symbols
