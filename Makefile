@@ -1,21 +1,21 @@
 # Target File
-TARGET = test
+TARGET = main
 
 # Include Libraries:
-prefix = C:/STM32L1xx_StdPeriph_Lib_V1.3.1
+prefix = C:/libarm/STM32L1xx_StdPeriph_Lib_V1.3.1
 
 LIB_CMSIS_PRE = $(prefix)/Libraries/CMSIS
 LIB_CMSIS_INC = $(LIB_CMSIS_PRE)/Include/
 
 LIB_CMSIS_DEV_PRE = $(LIB_CMSIS_PRE)/Device/ST/STM32L1xx
 LIB_CMSIS_DEV_INC = $(LIB_CMSIS_DEV_PRE)/Include/
-LIB_CMSIS_DEV_SRC = $(LIB_CMSIS_DEV_PRE)/Source/Templates/
+LIB_CMSIS_DEV_SRC = $(LIB_CMSIS_DEV_PRE)/Source/Templates
 
 LIB_PERIPHERALS_PRE = $(prefix)/Libraries/STM32L1xx_StdPeriph_Driver
 LIB_PERIPHERALS_INC = $(LIB_PERIPHERALS_PRE)/inc/
 LIB_PERIPHERALS_SRC = $(LIB_PERIPHERALS_PRE)/src/
 
-PROJECT_INCLUDE = C:/ARMProgTest/inc/
+PROJECT_INCLUDE = C:/arm-lora/inc/
 
 #LIBEVAL = $(prefix)/Utilities/STM32_EVAL/STM32L152_EVAL/
 #LIBEVALCOMM = $(prefix)/Utilities/STM32_EVAL/Common/
@@ -47,7 +47,7 @@ compile := $(BUILD_PATH)/$(TARGET).o
 peripheral_src := $(wildcard $(LIB_PERIPHERALS_SRC)*.c)
 peripheral_obj := $(patsubst $(LIB_PERIPHERALS_SRC)%.c,$(OBJ_PATH)/%.o,$(peripheral_src))
 
-assemble-startup := $(OBJ_PATH)/startup_stm32l1xx_md.o
+assemble-startup := $(OBJ_PATH)/startup_stm32l1xx_xl.o
 assemble-nucleo := $(OBJ_PATH)/stm32l1xx_nucleo.o
 assemble-device := $(OBJ_PATH)/system_stm32l1xx.o
 assemble-it-file := $(OBJ_PATH)/stm32l1xx_it.o
@@ -66,39 +66,39 @@ LIB_INCLUDES_EXT = -I'$(PROJECT_INCLUDE)'
 LIB_LINKS = -L'$(ARCHIVE_PATH)' -L'$(BUILD_PATH)' -L'$(OBJ_PATH)'
 
 # Preprocessor Symbols
-PRE_DEVICE = -D STM32L1XX_MD
+PRE_DEVICE = -D STM32L1XX_XL
 PRE_DRIVER = -D USE_STDPERIPH_DRIVER
 
 # Make Rules
 
 all: $(assemble-device) $(assemble-it-file) $(peripheral_obj) $(assemble-startup) $(assemble-nucleo) $(build-library) $(compile) $(link) $(binary)
 
-# upload
-upload: $(BUILD_PATH)/$(TARGET).bin
+# upload for windows
+upload-win: $(BUILD_PATH)/$(TARGET).bin
 	cp $< $(UPLOAD_PATH)/$(<F)
 
 # build library
-$(ARCHIVE_PATH)/libperipherals.a: $(peripheral_obj)
+$(build-library): $(peripheral_obj)
 	$(AR) rcs $@ $^
 
 # link
-$(BUILD_PATH)/$(TARGET).elf: $(BUILD_PATH)/$(TARGET).o $(assemble-startup) $(assemble-nucleo) $(build-library) $(assemble-device)
-	$(CC) $(CFLAGS) $(LFLAGS) $(LIB_LINKS) -lc 
+$(link): $(BUILD_PATH)/$(TARGET).o $(assemble-startup) $(assemble-nucleo) $(assemble-it-file) $(build-library) $(assemble-device)
+	$(CC) $(CFLAGS) $(LFLAGS) $(LIB_LINKS) -lc $^
 
 # binary
-$(BUILD_PATH)/$(TARGET).bin: $(BUILD_PATH)/$(TARGET).elf
+$(binary): $(BUILD_PATH)/$(TARGET).elf
 	$(CP) -O binary $< $@
 
 # compile
-$(BUILD_PATH)/$(TARGET).o: $(SOURCE_PATH)/$(TARGET).c $(SOURCE_PATH)/$(TARGET).h 
+$(compile): $(SOURCE_PATH)/$(TARGET).c $(INCLUDE_PATH)/$(TARGET).h 
 	$(CC) $(CFLAGS) $(LIB_INCLUDES) $(LIB_INCLUDES_EXT) $(PRE_DRIVER) $(PRE_DEVICE) -c $< -o $@
 
 # assemble-startup
-$(OBJ_PATH)/startup_stm32l1xx_md.o: $(STARTUP_FILE_PATH)/startup_stm32l1xx_md.s
+$(assemble-startup): $(patsubst $(OBJ_PATH)%.o, $(STARTUP_FILE_PATH)%.s, $(assemble-startup))
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # assemble-nucleo
-$(OBJ_PATH)/stm32l1xx_nucleo.o: $(INCLUDE_PATH)/stm32l1xx_nucleo.c $(INCLUDE_PATH)/stm32l1xx_nucleo.h
+$(assemble-nucleo): $(patsubst $(OBJ_PATH)%.o, $(INCLUDE_PATH)%.c, $(assemble-nucleo))  $(patsubst $(OBJ_PATH)%.o, $(INCLUDE_PATH)%.h, $(assemble-nucleo))
 	$(CC) $(CFLAGS) $(LIB_INCLUDES) $(LIB_INCLUDES_EXT) $(PRE_DEVICE) $(PRE_DRIVER) -c -o $@ $<
 
 # peripheral_obj
@@ -106,14 +106,13 @@ $(OBJ_PATH)/%.o: $(LIB_PERIPHERALS_SRC)%.c
 	$(CC) $(CFLAGS) $(LIB_INCLUDES) $(LIB_INCLUDES_EXT) $(PRE_DRIVER) $(PRE_DEVICE) -c -o $@ $<
 
 # assemble-it-file
-$(OBJ_PATH)/stm32l1xx_it.o: $(INCLUDE_PATH)/stm32l1xx_it.c $(INCLUDE_PATH)/stm32l1xx_it.h
+$(assemble-it-file):  $(patsubst $(OBJ_PATH)%.o, $(INCLUDE_PATH)%.c, $(assemble-it-file))  $(patsubst $(OBJ_PATH)%.o, $(INCLUDE_PATH)%.h, $(assemble-it-file))
 	$(CC) $(CFLAGS) $(LIB_INCLUDES) $(LIB_INCLUDES_EXT) $(PRE_DRIVER) $(PRE_DEVICE) -c -o $@ $<
 
 
 # assemble-device
-$(OBJ_PATH)/system_stm32l1xx.o: $(LIB_CMSIS_DEV_SRC)system_stm32l1xx.c
+$(assemble-device): $(patsubst $(OBJ_PATH)%.o, $(LIB_CMSIS_DEV_SRC)%.c, $(assemble-device))
 	$(CC) $(CFLAGS) $(LIB_INCLUDES) $(LIB_INCLUDES_EXT) $(PRE_DRIVER) $(PRE_DEVICE) -c -o $@ $<
-
 
 clean:
 	rm -f $(BUILD_PATH)/$(TARGET).* 
@@ -129,3 +128,6 @@ clean-all-objects:
 
 clean-ar:
 	rm -f $(ARCHIVE_PATH)/*.a
+
+clean-locals:
+	rm -f $(assemble-device) $(assemble-it-file) $(assemble-nucleo) $(assemble-startup)

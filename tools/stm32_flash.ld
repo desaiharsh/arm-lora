@@ -1,4 +1,4 @@
-INPUT(test.o startup_stm32l1xx_md.o stm32l1xx_nucleo.o libperipherals.a stm32l1xx_it.o system_stm32l1xx.o) 
+/* INPUT(test.o startup_stm32l1xx_md.o stm32l1xx_nucleo.o libperipherals.a stm32l1xx_it.o system_stm32l1xx.o) */
 /* Entry Point */
 ENTRY(Reset_Handler)
 
